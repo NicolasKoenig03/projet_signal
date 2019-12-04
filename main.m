@@ -51,25 +51,6 @@ hold on, plot([0, length(DSP_bruit)],[mean(DSP_bruit) mean(DSP_bruit)],'-.r');
 [signal_bruite1] = bruitage(fcno03fz);
 % [signal_bruite2] = bruitage(fcno04fz);
 % 
-%
-% Periodogram & représentation temporelle
-% pour le signal non bruité
-figure,
-subplot(211)
-spectrogram(fcno03fz,[],[],N,fs,'yaxis')
-colorbar('off') 
-xlim([0.5,6])
-subplot(212)
-plot(t,fcno03fz)
-xlim([0.5,6])
-% 
-% % pour le signal bruité
-figure,
-subplot(211)
-spectrogram(signal_bruite1,[],[],N,fs,'yaxis')
-colorbar('off')
-xlim([0.5,6])
-subplot(212)
-plot(t,signal_bruite1)
-xlim([0.5,6])
+plot_spectrogram(fcno03fz);
+plot_spectrogram(signal_bruite1);
 
