@@ -1,4 +1,4 @@
-function [] = add_recouvrement(signal)
+function [signal_recomp] = add_recouvrement(signal)
 
 %% Sans recouvrement
 % M = 1000;                       % window length
@@ -11,16 +11,18 @@ function [] = add_recouvrement(signal)
 %  recomposition = zeros(N/M,M);
 %  for i=1:N/M
 %      recomposition(i,:) = trames(i,:).*w';
+%      recomposition(i,:) = jensen(recomposition(i,:),0.3);
 %      recomposition(i,:) = recomposition(i,:)./w';
 %      signal_recomp = reshape(recomposition,[],1);
 %  end
-%  figure, plot(signal)
+%  figure, plot(sistem(sing_val)
 %  hold on; plot(signal_recomp/w, '*r')
 
  
  
 %% Avec recouvrement 50%
 close all
+ratio = 1/3;
 windowLength = 1000; % store this value
 w = hanning(windowLength);
 overlap = 0.5;  % in portion of windowLength - 20% in this example
@@ -28,7 +30,7 @@ increment = floor(windowLength*overlap);
 startPos = 1;
 endPos = startPos + windowLength;
 j = 1;
-recomposition = [];
+recomposition = zeros(floor((length(signal)-increment)/increment),500);
 
 % Parties des fenêtres de hanning qui overlap
 w_middle1 = w(1:increment);
@@ -43,11 +45,12 @@ while endPos < length(signal)-increment
     trame1 = signal(startPos:endPos-1).*w;
     trame2 = signal(startPos+increment:endPos+increment-1).*w;
     
-    % Normalisation du signal qui overlap
+    % Normalisation et rehaussement du signal qui overlap
     overlap_zone = (trame1(increment+1:windowLength)+trame2(1:increment))./(w_middle1+w_middle2);
-    recomposition(j,:) = overlap_zone;
+    overlap_zone_jensen = jensen(overlap_zone,ratio);
+    recomposition(j,:) = overlap_zone_jensen;
     
-%     plot([startPos+increment:endPos-1],recomposition(j,:));
+    % Plot([startPos+increment:endPos-1],recomposition(j,:));
     startPos = startPos + increment ;
     endPos = endPos + increment;
     j=j+1;
@@ -59,7 +62,7 @@ plot(BOS);
 plot([length(signal)-increment:length(signal)-1],EOSbis)
 plot([length(signal)-windowLength:length(signal)-1],EOS)
 recomp_reshape = reshape(recomposition',1,[]);
-signal_recomp = cat(2,BOS',recomp_reshape,EOSbis')
+signal_recomp = cat(2,BOS',recomp_reshape,EOSbis');
 figure, plot(signal_recomp,'b');
 hold on; plot(signal,'r')
 
@@ -71,5 +74,5 @@ end
 % Une moyenne des fenetres induit une amplification
 % quand la fenêtre 1 est grande la 2eme est petite donc la somme des
 % fenêtres peut être égale à 1 si elles sont bien choisies
-% 
+
     

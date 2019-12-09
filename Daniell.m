@@ -1,11 +1,11 @@
 function [y,f] = Daniell(x,Nbfenetre,Fe)
 %DANIELL Summary of this function goes here
-% Lors de la méthod de Daniell nous calculons d'abord la DSP sur
-% l'intégralité du signal et nous réalisons ensuite des moyennes sur des
-% tranches de signaux
+% Lors de la mï¿½thod de Daniell nous calculons d'abord la DSP sur
+% l'intï¿½gralitï¿½ du signal et nous rï¿½alisons ensuite des moyennes sur des
+% trames de signaux
 
   fourier_transform = fftshift(fft(x));
-  matrix = abs(fourier_transform).^2; % pour le calcule de la DSP mise au carré de fft
+  matrix = abs(fourier_transform).^2; % pour le calcule de la DSP mise au carrï¿½ de fft
 
   Dsp_vector = zeros(Nbfenetre);
   
