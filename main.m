@@ -4,48 +4,51 @@ load('fcno04fz.mat');
 signal1 = fcno03fz;
 signal2 = fcno04fz;
 %% paramètres 
-sigma = 10;
-mu = 0;
-var = sigma^2;
-N = length(signal1);
-L = 1000;
-nfft = 512;
-fs = 8e3;
-Ts = 1/fs;
+sigma = 2; % écart-type du bruit blanc gaussien
+mu = 0; % moyenne du bruit (centré)
+var = sigma^2; % variance du bruit
+N = length(signal1); % Longueur du signal de parole
+L = 1000; % nbre d'échantillons du bruit blanc
+fs = 8e3; % fréquence d'échantillonnage
+Ts = 1/fs; % periode d'échantillonnage
 
-t = [0:Ts:N*Ts-Ts];
-f = [-1/2:1/nfft:1/2-(1/nfft)];
+p2 = nextpow2(L);
+nfft = 2^p2; % pour faciliter la FFT 
+% Quand nfft > L le signal est zero paddé jusqu'à nfft
+
+t = [0:Ts:N*Ts-Ts]; % axe des temps
+f = [-1/2:1/nfft:1/2-(1/nfft)]; % axe des fréquences
 
 
 %% Définition du bruit blanc gaussien centré et de sa DSP Théorique
-bbcg = mu+randn(1,L)*var;
-
-% DSP Théorique
-theorique=mu^2*ones(1,2*N-1);
-theorique(1,floor(N-1)) = mu^2 + sigma^2;
+bbcg = mu+randn(1,L)*sigma;
 
 %% Définition des estimateurs de la fct d'autocorr 
-corr_theo = xcorr(bbcg);
-corr_biased = xcorr(bbcg, 'biased');
-corr_unbiased = xcorr(bbcg, 'unbiased');
+corr_theo = zeros(1,2*L-1);
+corr_theo(ceil(L-1)) = mu^2+var;
+[corr_biased, lags_biased] = xcorr(bbcg, 'biased');
+[corr_unbiased, lags_unbiased] = xcorr(bbcg, 'unbiased');
 % Affichage
-subplot(311)
-plot(corr_theo);title('corr theorique')
+figure,subplot(311)
+plot(lags_unbiased,corr_theo);title('corr theorique')
 subplot(312)
-plot(corr_biased);title('corr biased')
+plot(lags_biased,corr_biased);title('corr biased')
 subplot(313)
-plot(corr_unbiased);title('corr unbiased')
-ylim([-4e3,1e4]);
+plot(lags_unbiased,corr_unbiased);title('corr unbiased')
+% ylim([-4e3,1e4]);
 
 %% Spectre de puissance du bbcg & DSP du bruit
-spectre_bbcg = fftshift(abs(fft(bbcg)).^2)/L; 
+spectre_bbcg = (abs(fftshift(fft(bbcg,nfft))).^2)/L; 
 % DSP du bruit
-DSP_bruit = fftshift(abs(fft(bbcg)))
+DSP_bruit = fftshift(fft(corr_theo,nfft));
+% DSP théorique
+DSP_theo = ones(1,nfft)*var; % stationnaire + ergodique → puissance = variance
+
 %Affichage  
-subplot(211), plot(spectre_bbcg);title('DSP theorique')
-hold on, plot([0,length(bbcg)],[mean(spectre_bbcg) mean(spectre_bbcg)],'-.r');
-subplot(212),plot(DSP_bruit);title('DSP')
-hold on, plot([0, length(DSP_bruit)],[mean(DSP_bruit) mean(DSP_bruit)],'-.r');
+subplot(211), plot(f,spectre_bbcg);title('Spectre de puissance')
+hold on, plot([-1/2,1/2],[mean(spectre_bbcg) mean(spectre_bbcg)],'-.r');
+subplot(212),plot(f,DSP_bruit);title('DSP du bruit')
+% hold on, plot(f,[mean(DSP_bruit) mean(DSP_bruit)],'-.r');
 hold off;
  
 %% bruit
